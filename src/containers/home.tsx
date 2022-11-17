@@ -10,7 +10,7 @@ const HomePage = () => {
     // const [preview, setPreview] = useState<string>();
     const [showPreview, setShowPreview] = useState(false);
     const [predict, setPredict] = useState(false);
-    const [msg, setMsg] = useState<Record<string, string>>({ color: "text-gray-900", msg: "⚠️ ONLY SALGAN WORKS" });
+    const [msg, setMsg] = useState<Record<string, string>>({ color: "text-gray-900", msg: "⚠️ ONLY SALGAN WORKS, UPLOAD IMAGES ONLY!" });
     const [resultFile, setResultFile] = useState<Blob>();
     const [resultUrl, setResultUrl] = useState<string>();
 
@@ -55,7 +55,7 @@ const HomePage = () => {
         data.append("image", e.target.files[0]);
 
         await axios
-            .post<File>("http://localhost:5000/resize", data, {
+            .post<File>("http://minzi.live:5000/resize", data, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 },
@@ -73,7 +73,7 @@ const HomePage = () => {
 
     const getPrediction = async (): Promise<void> => {
         await axios
-            .get<File>("http://localhost:5000/salgan", {
+            .get<File>("http://minzi.live:5000/salgan", {
                 headers: {
                     "Content-Type": "image/png",
                 },
