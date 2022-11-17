@@ -55,7 +55,7 @@ const HomePage = () => {
         data.append("image", e.target.files[0]);
 
         await axios
-            .post<File>("http://minzi.live:5000/resize", data, {
+            .post<File>("https://minzi.live:5000/resize", data, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 },
@@ -73,7 +73,7 @@ const HomePage = () => {
 
     const getPrediction = async (): Promise<void> => {
         await axios
-            .get<File>("http://minzi.live:5000/salgan", {
+            .get<File>("https://minzi.live:5000/salgan", {
                 headers: {
                     "Content-Type": "image/png",
                 },
