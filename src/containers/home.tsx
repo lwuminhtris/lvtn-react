@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import ReactLogo from "@assets/icons/react.svg";
 import React, { useEffect, useState } from "react";
 import { Fragment } from "react";
 import { Disclosure } from "@headlessui/react";
