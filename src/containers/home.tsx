@@ -6,75 +6,88 @@ import SaliencyResult from "../components/saliencyResult";
 import axios from "axios";
 
 const HomePage = () => {
-    const [selectedFile, setSelectedFile] = useState<File>();
-    const [preview, setPreview] = useState<string>();
+    // const [selectedFile, setSelectedFile] = useState<File>();
+    // const [preview, setPreview] = useState<string>();
     const [showPreview, setShowPreview] = useState(false);
     const [predict, setPredict] = useState(false);
-    const [msg, setMsg] = useState<string>("");
+    const [msg, setMsg] = useState<Record<string, string>>({ color: "text-gray-900", msg: "⚠️ ONLY SALGAN WORKS" });
     const [resultFile, setResultFile] = useState<Blob>();
     const [resultUrl, setResultUrl] = useState<string>();
 
+    const [previewFile, setPreviewFile] = useState<Blob>();
+    const [previewUrl, setPreviewUrl] = useState<string>();
+
     useEffect(() => {
-        setMsg("⚠️ Only SalGAN works right now!, accept image with width/height ratio 4/3 only.");
-        if (!selectedFile) {
-            setPreview(undefined);
+        if (!previewFile) {
             return;
         }
-
-        const objectUrl = URL.createObjectURL(selectedFile);
-        setPreview(objectUrl);
-
-        // free memory when ever this component is unmounted
-        return () => URL.revokeObjectURL(objectUrl);
-    }, [selectedFile]);
+        const url = URL.createObjectURL(
+            new Blob([previewFile], { type: "image/png" })
+        );
+        setPreviewUrl(url);
+        return () => URL.revokeObjectURL(url);
+    }, [previewFile]);
 
     useEffect(() => {
+        if (!resultFile) {
+            return;
+        }
+        const url = URL.createObjectURL(
+            new Blob([resultFile], { type: "image/png" })
+        );
         console.log(resultFile);
+        setResultUrl(url);
+        return () => URL.revokeObjectURL(url);
     }, [resultFile]);
 
     const uploadImage = async (
         e: React.ChangeEvent<HTMLInputElement>
     ): Promise<void> => {
         if (!e.target.files || e.target.files.length === 0) {
-            setSelectedFile(undefined);
+            // setSelectedFile(undefined);
             return;
         }
 
-        setSelectedFile(e.target.files[0]);
+        // setSelectedFile(e.target.files[0]);
         setShowPreview(true);
 
         let data = new FormData();
         data.append("image", e.target.files[0]);
 
         await axios
-            .post<File>("http://localhost:5000/salgan", data, {
+            .post<File>("http://localhost:5000/resize", data, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 },
                 responseType: "blob",
             })
-            .then(
-                (res) => {
-                    const data = res.data;
-                    setResultFile(data);
-                    setMsg("⬆️ Image uploaded to server successfully!");
-                },
-                () => console.log("Waiting!")
-            )
+            .then((res) => {
+                setPreviewFile(res.data);
+                setMsg({
+                    color: "text-blue-900",
+                    msg: "⬆️ IMAGE UPLOADED!",
+                });
+            })
             .catch((e) => console.log("Error at uploading with", e));
     };
 
     const getPrediction = async (): Promise<void> => {
-        if (!resultFile) {
-            console.log("Error at getPrediction()");
-            return;
-        }
-        const url = URL.createObjectURL(
-            new Blob([resultFile], { type: "image/png" })
-        );
-        setResultUrl(url);
-        setMsg("✅ Saliency map generated successfully!");
-        setPredict(true);
+        await axios
+            .get<File>("http://localhost:5000/salgan", {
+                headers: {
+                    "Content-Type": "image/png",
+                },
+                responseType: "blob"
+            })
+            .then((res) => {
+                setResultFile(res.data);
+                setMsg({
+                    color: "text-blue-900",
+                    msg: "✅ MAP GENERATED",
+                });
+                setPredict(true);
+            })
+            .catch((e) => console.log("Error at Prediction with", e));
     };
 
     const navigation = [
@@ -125,8 +138,8 @@ const HomePage = () => {
 
                 <header className="bg-white shadow">
                     <div className="mx-auto max-w-7xl py-6 px-4 sm:px-6 lg:px-8">
-                        <h1 className="text-3xl font-bold tracking-tight text-red-900">
-                            {msg}
+                        <h1 className={"text-3xl font-bold tracking-tight " + msg.color}>
+                            {msg.msg}
                         </h1>
                     </div>
                 </header>
@@ -213,7 +226,7 @@ const HomePage = () => {
                             <div className="flex text-center justify-center align-middle h-fit">
                                 <h1 className="m-auto mb-4 text-3xl font-extrabold dark:text-white md:text-3xl lg:text-4xl">
                                     <span className="text-transparent bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">
-                                        ORIGINAL IMAGE
+                                        ORIGINAL IMAGE RESIZED TO 4:3 RATIO
                                     </span>
                                 </h1>
                             </div>
@@ -230,12 +243,12 @@ const HomePage = () => {
 
                         {showPreview ? (
                             <div className="flex-auto h-3/4 mb-4">
-                                <div className="flex flex-row h-[480px] rounded-lg align-middle justify-center">
+                                <div className="flex flex-row h-[720px] align-middle justify-center">
                                     {/* Preview Image */}
                                     <figure className="h-full min-w-fit	">
                                         <img
-                                            className="h-full min-w-full rounded-lg"
-                                            src={preview}
+                                            className="h-full min-w-full"
+                                            src={previewUrl}
                                             alt=""
                                         />
                                     </figure>

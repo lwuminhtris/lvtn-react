@@ -5,18 +5,18 @@ const SaliencyResult = (props: Record<string, string>) => {
         <>
             <div className="flex text-center justify-center align-middle">
                 <h1 className="m-auto mb-4 text-3xl font-extrabold text-gray-900 dark:text-gray-900 md:text-3xl lg:text-4xl">
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r to-emerald-600 from-sky-400">
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r to-blue-500 from-indigo-500">
                         {props.caption}
                     </span>
                 </h1>
             </div>
 
             <div className="flex-auto h-3/4 mb-4">
-                <div className="flex flex-row h-[480px] rounded-lg align-middle justify-center">
+                <div className="flex flex-row h-[720px] align-middle justify-center">
                     {/* Preview Image */}
                     <figure className="h-full min-w-fit	">
                         <img
-                            className="h-full min-w-full rounded-lg"
+                            className="h-full min-w-full"
                             src={props.imageUrl}
                             alt={props.imageUrl}
                         />
