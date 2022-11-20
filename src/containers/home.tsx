@@ -1,58 +1,55 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import React, { useEffect, useState } from "react";
-import { Fragment } from "react";
 import { Disclosure } from "@headlessui/react";
 import SaliencyResult from "../components/saliencyResult";
+import Notification from "../components/notification";
 import axios from "axios";
 
 const HomePage = () => {
-    // const [selectedFile, setSelectedFile] = useState<File>();
-    // const [preview, setPreview] = useState<string>();
-    const [showPreview, setShowPreview] = useState(false);
+    const [showPreview, setPreview] = useState(false);
     const [predict, setPredict] = useState(false);
-    const [msg, setMsg] = useState<Record<string, string>>({ color: "text-gray-900", msg: "⚠️ ONLY SALGAN WORKS, UPLOAD IMAGES ONLY!" });
-    const [resultFile, setResultFile] = useState<Blob>();
-    const [resultUrl, setResultUrl] = useState<string>();
+    const [resultUrl, setResultUrl] = useState<string>("");
+    const [previewUrl, setPreviewUrl] = useState<string>("");
+    const [notification, setNotification] = useState<number>(0);
 
-    const [previewFile, setPreviewFile] = useState<Blob>();
-    const [previewUrl, setPreviewUrl] = useState<string>();
+    // 0 -> Attention; 1 -> Pending; 2 -> Success
+    const styles = {
+        attention: {
+            style:
+                "p-4 text-yellow-900 bg-yellow-100 border border-yellow-200 rounded-md",
+            title: "Attention",
+            img: "M13.6086 3.247l8.1916 15.8c.0999.2.1998.5.1998.8 0 1-.7992 1.8-1.7982 1.8H3.7188c-.2997 0-.4995-.1-.7992-.2-.7992-.5-1.1988-1.5-.6993-2.4 5.3067-10.1184 8.0706-15.385 8.2915-15.8.3314-.6222.8681-.8886 1.4817-.897.6135-.008 1.273.2807 1.6151.897zM12 18.95c.718 0 1.3-.582 1.3-1.3 0-.718-.582-1.3-1.3-1.3-.718 0-1.3.582-1.3 1.3 0 .718.582 1.3 1.3 1.3zm-.8895-10.203v5.4c0 .5.4.9.9.9s.9-.4.9-.9v-5.3c0-.5-.4-.9-.9-.9s-.9.4-.9.8z",
+            content: "Only TranSalNet and SalGAN are working!",
+        },
+        pending: {
+            style: "p-4 text-blue-900 bg-blue-100 border border-blue-200 rounded-md",
+            title: "Pending",
+            img: "M14.1667 17h-3.3334c-.5 0-.8333-.3146-.8333-.7865 0-.472.3333-.7865.8333-.7865H11.5c.0833 0 .1667-.0787.1667-.1573v-3.5394c0-.0786-.0834-.1573-.1667-.1573h-.6667c-.5 0-.8333-.3146-.8333-.7865S10.3333 10 10.8333 10h.8334c.9166 0 1.6666.7079 1.6666 1.573v3.7753c0 .0787.0834.1573.1667.1573h.6667c.5 0 .8333.3146.8333.7865 0 .472-.3333.7079-.8333.7079zM12.3 6c.6933 0 1.3.6067 1.3 1.3s-.52 1.3-1.3 1.3S11 7.9933 11 7.3 11.6067 6 12.3 6zM12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2",
+            content: "Image is processing!",
+        },
+        success: {
+            style: "p-4 text-green-900 bg-green-100 border border-green-200 rounded-md",
+            title: "Success",
+            img: "M8.445 12.6675A.9.9 0 0 0 7.1424 13.91l2.5726 2.7448c.3679.3856.9884.3689 1.335-.036l5.591-7.0366a.9.9 0 0 0-1.3674-1.1705l-4.6548 5.9132a.4.4 0 0 1-.607.0252l-1.567-1.6826zM1.9995 12c0-5.5 4.5-10 10-10s10 4.5 10 10-4.5 10-10 10-10-4.5-10-10z",
+            content: "Task completed successfully!",
+        },
+    };
 
     useEffect(() => {
-        if (!previewFile) {
-            return;
-        }
-        const url = URL.createObjectURL(
-            new Blob([previewFile], { type: "image/png" })
-        );
-        setPreviewUrl(url);
-        return () => URL.revokeObjectURL(url);
-    }, [previewFile]);
+        return () => URL.revokeObjectURL(previewUrl);
+    }, [previewUrl]);
 
     useEffect(() => {
-        if (!resultFile) {
-            return;
-        }
-        const url = URL.createObjectURL(
-            new Blob([resultFile], { type: "image/png" })
-        );
-        console.log(resultFile);
-        setResultUrl(url);
-        return () => URL.revokeObjectURL(url);
-    }, [resultFile]);
+        return () => URL.revokeObjectURL(resultUrl);
+    }, [resultUrl]);
 
     const uploadImage = async (
         e: React.ChangeEvent<HTMLInputElement>
     ): Promise<void> => {
-        if (!e.target.files || e.target.files.length === 0) {
-            // setSelectedFile(undefined);
-            return;
-        }
-
-        // setSelectedFile(e.target.files[0]);
-        setShowPreview(true);
-
-        let data = new FormData();
-        data.append("image", e.target.files[0]);
+        setNotification(1);
+        const data = new FormData();
+        e.target.files
+            ? data.append("image", e.target.files[0])
+            : console.log(`file is null`);
 
         await axios
             .post<File>("https://minzi.live/resize", data, {
@@ -62,36 +59,32 @@ const HomePage = () => {
                 responseType: "blob",
             })
             .then((res) => {
-                setPreviewFile(res.data);
-                setMsg({
-                    color: "text-blue-900",
-                    msg: "⬆️ IMAGE UPLOADED!",
-                });
+                setNotification(2);
+                setPreviewUrl(URL.createObjectURL(res.data));
+                setPreview(true);
             })
             .catch((e) => console.log("Error at uploading with", e));
     };
 
     const getPrediction = async (): Promise<void> => {
+        setNotification(1);
         await axios
             .get<File>("https://minzi.live/salgan", {
                 headers: {
                     "Content-Type": "image/png",
                 },
-                responseType: "blob"
+                responseType: "blob",
             })
             .then((res) => {
-                setResultFile(res.data);
-                setMsg({
-                    color: "text-blue-900",
-                    msg: "✅ MAP GENERATED",
-                });
+                setNotification(2);
+                setResultUrl(URL.createObjectURL(res.data));
                 setPredict(true);
             })
-            .catch((e) => console.log("Error at Prediction with", e));
+            .catch((e) => console.log("Error at prediction with", e));
     };
 
     const navigation = [
-        { name: "Dashboard", href: "#", current: true },
+        { name: "Dashboard", href: "", current: true },
         { name: "TranSalNet", href: "#", current: false },
         { name: "CASNet", href: "#", current: false },
         { name: "SalGAN", href: "#", current: false },
@@ -138,13 +131,37 @@ const HomePage = () => {
 
                 <header className="bg-white shadow">
                     <div className="mx-auto max-w-7xl py-6 px-4 sm:px-6 lg:px-8">
-                        <h1 className={"text-3xl font-bold tracking-tight " + msg.color}>
-                            {msg.msg}
-                        </h1>
+                        <h1 className={"text-3xl font-bold tracking-tight"}>Results</h1>
                     </div>
                 </header>
                 <main>
                     <div className="mx-auto max-w-7xl py-6 sm:px-6 lg:px-8 flex flex-col h-100">
+                        <div className="z-10 mb-6">
+                            {notification === 0 ?
+                                <Notification
+                                    style={styles.attention.style}
+                                    title={styles.attention.title}
+                                    img={styles.attention.img}
+                                    content={styles.attention.content}
+                                /> : null
+                            }
+                            {notification === 1 ?
+                                <Notification
+                                    style={styles.pending.style}
+                                    title={styles.pending.title}
+                                    img={styles.pending.img}
+                                    content={styles.pending.content}
+                                /> : null
+                            }
+                            {notification === 2 ?
+                                <Notification
+                                    style={styles.success.style}
+                                    title={styles.success.title}
+                                    img={styles.success.img}
+                                    content={styles.success.content}
+                                /> : null
+                            }
+                        </div>
                         <div className="flex-auto w-full h-1/4 mb-2">
                             <div className="flex flex-col rounded-lg">
                                 {/* Upload Button */}
