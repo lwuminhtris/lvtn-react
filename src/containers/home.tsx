@@ -7,7 +7,8 @@ import axios from "axios";
 const HomePage = () => {
     const [showPreview, setPreview] = useState(false);
     const [predict, setPredict] = useState(false);
-    const [resultUrl, setResultUrl] = useState<string>("");
+    const [salganUrl, setsalganUrl] = useState<string>("");
+    const [transalnetUrl, settransalnetUrl] = useState<string>("");
     const [previewUrl, setPreviewUrl] = useState<string>("");
     const [notification, setNotification] = useState<number>(0);
 
@@ -39,8 +40,8 @@ const HomePage = () => {
     }, [previewUrl]);
 
     useEffect(() => {
-        return () => URL.revokeObjectURL(resultUrl);
-    }, [resultUrl]);
+        return () => URL.revokeObjectURL(salganUrl);
+    }, [salganUrl]);
 
     const uploadImage = async (
         e: React.ChangeEvent<HTMLInputElement>
@@ -64,6 +65,18 @@ const HomePage = () => {
                 setPreview(true);
             })
             .catch((e) => console.log("Error at uploading with", e));
+
+        await axios
+            .post<File>("https://minzi.live/transalnet", data, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+                responseType: "blob",
+            })
+            .then((res) => {
+                settransalnetUrl(URL.createObjectURL(res.data));
+            })
+            .catch((e) => console.log("Error at transalnet with", e));
     };
 
     const getPrediction = async (): Promise<void> => {
@@ -77,7 +90,7 @@ const HomePage = () => {
             })
             .then((res) => {
                 setNotification(2);
-                setResultUrl(URL.createObjectURL(res.data));
+                setsalganUrl(URL.createObjectURL(res.data));
                 setPredict(true);
             })
             .catch((e) => console.log("Error at prediction with", e));
@@ -274,14 +287,14 @@ const HomePage = () => {
                             </div>
                         ) : null}
 
-                        {/* {predict ? (
+                        {predict ? (
                             <SaliencyResult
-                                imageUrl={preview || ""}
+                                imageUrl={transalnetUrl || ""}
                                 caption="TRANSALNET SALIENCY MAP RESULT"
                             />
                         ) : null}
 
-                        {predict ? (
+                        {/* {predict ? (
                             <SaliencyResult
                                 imageUrl={preview || ""}
                                 caption="CASNET SALIENCY MAP RESULT"
@@ -290,7 +303,7 @@ const HomePage = () => {
 
                         {predict ? (
                             <SaliencyResult
-                                imageUrl={resultUrl || ""}
+                                imageUrl={salganUrl || ""}
                                 caption="SALGAN SALIENCY MAP RESULT"
                             />
                         ) : null}
