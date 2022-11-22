@@ -53,7 +53,7 @@ const HomePage = () => {
             : console.log(`file is null`);
 
         await axios
-            .post<File>("https://minzi.live/resize", data, {
+            .post<File>("https://minzi.live/save", data, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 },
@@ -61,7 +61,7 @@ const HomePage = () => {
             })
             .then((res) => {
                 setNotification(2);
-                setPreviewUrl(URL.createObjectURL(res.data));
+                e.target.files ? setPreviewUrl(URL.createObjectURL(e.target.files[0])) : console.log(`file is null`);
                 setPreview(true);
             })
             .catch((e) => console.log("Error at uploading with", e));
