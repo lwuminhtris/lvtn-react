@@ -12,6 +12,9 @@ const HomePage = () => {
     const [msinetUrl, setmsinetUrl] = useState<string>("");
     const [previewUrl, setPreviewUrl] = useState<string>("");
     const [notification, setNotification] = useState<number>(0);
+    const [msiLoaded, setMsiLoaded] = useState<boolean>(false);
+    const [salganLoaded, setSalganLoaded] = useState<boolean>(false);
+    const [transLoaded, setTransLoaded] = useState<boolean>(false);
 
     // 0 -> Attention; 1 -> Pending; 2 -> Success
     const styles = {
@@ -44,6 +47,12 @@ const HomePage = () => {
         return () => URL.revokeObjectURL(salganUrl);
     }, [salganUrl]);
 
+    useEffect(() => {
+        if ((transLoaded === true) && (msiLoaded === true) && (salganLoaded === true)) {
+            setNotification(2);
+        }
+    }, [transLoaded, msiLoaded, salganLoaded])
+
     const uploadImage = async (
         e: React.ChangeEvent<HTMLInputElement>
     ): Promise<void> => {
@@ -67,7 +76,7 @@ const HomePage = () => {
             })
             .catch((e) => console.log("Error while uploading image", e));
 
-        let tranSalNetResult = axios
+        const tranSalNetResult = axios
             .post<File>("https://minzi.live/transalnet", data, {
                 headers: {
                     "Content-Type": "multipart/form-data",
@@ -75,11 +84,12 @@ const HomePage = () => {
                 responseType: "blob",
             })
             .then((res) => {
+                setTransLoaded(true);
                 settransalnetUrl(URL.createObjectURL(res.data));
             })
             .catch((e) => console.log("Error at TranSalNet with", e));
 
-        let msiNetResult = axios
+        const msiNetResult = axios
             .post<File>("https://minzi.live/msinet", data, {
                 headers: {
                     "Content-Type": "multipart/form-data",
@@ -87,6 +97,7 @@ const HomePage = () => {
                 responseType: "blob",
             })
             .then((res) => {
+                setMsiLoaded(true);
                 setmsinetUrl(URL.createObjectURL(res.data));
             })
             .catch((e) => console.log("Error at MSINet with", e));
@@ -104,7 +115,7 @@ const HomePage = () => {
                 responseType: "blob",
             })
             .then((res) => {
-                setNotification(2);
+                setSalganLoaded(true);
                 setsalganUrl(URL.createObjectURL(res.data));
                 setPredict(true);
             })
@@ -113,9 +124,6 @@ const HomePage = () => {
 
     const navigation = [
         { name: "Dashboard", href: "", current: true },
-        // { name: "TranSalNet", href: "#", current: false },
-        // { name: "MSINet", href: "#", current: false },
-        // { name: "SalGAN", href: "#", current: false },
     ];
 
     function classNames(...classes: string[]) {
@@ -245,11 +253,10 @@ const HomePage = () => {
                                                     <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
                                                         <span className="font-semibold">
                                                             Click to upload
-                                                        </span>{" "}
-                                                        or drag and drop
+                                                        </span>
                                                     </p>
                                                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                        PNG, JPEG file only
+                                                        PNG, JPEG, WEBP file only
                                                     </p>
                                                 </div>
                                                 <input
