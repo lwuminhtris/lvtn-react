@@ -63,7 +63,7 @@ const HomePage = () => {
             : console.log(`file is null`);
 
         await axios
-            .post<File>("https://minzi.live/save", data, {
+            .post<File>("https://www.minzi.live/save", data, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 },
@@ -77,7 +77,7 @@ const HomePage = () => {
             .catch((e) => console.log("Error while uploading image", e));
 
         const tranSalNetResult = axios
-            .post<File>("https://minzi.live/transalnet", data, {
+            .post<File>("https://www.minzi.live/transalnet", data, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 },
@@ -90,7 +90,7 @@ const HomePage = () => {
             .catch((e) => console.log("Error at TranSalNet with", e));
 
         const msiNetResult = axios
-            .post<File>("https://minzi.live/msinet", data, {
+            .post<File>("https://www.minzi.live/msinet", data, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 },
@@ -108,7 +108,7 @@ const HomePage = () => {
     const getPrediction = async (): Promise<void> => {
         setNotification(1);
         await axios
-            .get<File>("https://minzi.live/salgan", {
+            .get<File>("https://www.minzi.live/salgan", {
                 headers: {
                     "Content-Type": "image/png",
                 },
